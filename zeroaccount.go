@@ -71,6 +71,9 @@ func (zero *Client) Auth(ctx context.Context, headers map[string]string, body []
 	token, err := BearerFromHeader(headers)
 
 	if err != nil || token == "" {
+		if body == nil {
+			return nil, zero.error(ctx, fmt.Errorf("body cannot be nil"))
+		}
 		err := zero.save(ctx, uuid, body)
 		if err != nil {
 			return nil, zero.error(ctx, err)
