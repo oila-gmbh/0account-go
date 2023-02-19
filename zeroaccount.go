@@ -1,4 +1,4 @@
-package oneaccount
+package zeroaccount
 
 import (
 	"context"
@@ -62,6 +62,29 @@ func New(options ...option) *ZeroAccount {
 	return &zero
 }
 
+// Auth handles the authentication
+func (zero *ZeroAccount) Auth(ctx context.Context, header http.Header, body []byte) ([]byte, error) {
+	if zero == nil || zero.Engine == nil {
+		return nil, zero.error(ctx, fmt.Errorf("engine is not provided and/or the library is not initialised"))
+	}
+	uuid := header.Get("0account-uuid")
+	token, err := BearerFromHeader(header)
+
+	if err != nil || token == "" {
+		err := zero.save(ctx, uuid, body)
+		if err != nil {
+			return nil, zero.error(ctx, err)
+		}
+		return nil, nil
+	}
+
+	data, err := zero.authorize(ctx, token, uuid)
+	if err != nil {
+		return nil, zero.error(ctx, fmt.Errorf("cannot authorise: %v", err))
+	}
+	return data, nil
+}
+
 func (zero *ZeroAccount) save(ctx context.Context, uuid string, data []byte) error {
 	err := zero.Engine.Set(ctx, uuid, data)
 	if err != nil {
@@ -90,27 +113,4 @@ func (zero *ZeroAccount) error(ctx context.Context, err error) error {
 		zero.ErrorListener(ctx, err)
 	}
 	return err
-}
-
-// Auth handles the authentication
-func (zero *ZeroAccount) Auth(ctx context.Context, header http.Header, body []byte) ([]byte, error) {
-	if zero == nil || zero.Engine == nil {
-		return nil, zero.error(ctx, fmt.Errorf("engine is not provided and/or the library is not initialised"))
-	}
-	uuid := header.Get("0account-uuid")
-	token, err := BearerFromHeader(header)
-
-	if err != nil || token == "" {
-		err := zero.save(ctx, uuid, body)
-		if err != nil {
-			return nil, zero.error(ctx, err)
-		}
-		return nil, nil
-	}
-
-	data, err := zero.authorize(ctx, token, uuid)
-	if err != nil {
-		return nil, zero.error(ctx, fmt.Errorf("cannot authorise: %v", err))
-	}
-	return data, nil
 }
