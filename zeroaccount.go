@@ -27,7 +27,7 @@ type Client struct {
 
 func httpClient() *http.Client {
 	var netTransport = &http.Transport{
-		DialContext: (net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout: 15 * time.Second,
 		}).DialContext,
 		ForceAttemptHTTP2:     true,
