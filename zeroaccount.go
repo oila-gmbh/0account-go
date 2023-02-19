@@ -63,12 +63,12 @@ func New(options ...option) *ZeroAccount {
 }
 
 // Auth handles the authentication
-func (zero *ZeroAccount) Auth(ctx context.Context, header http.Header, body []byte) ([]byte, error) {
+func (zero *ZeroAccount) Auth(ctx context.Context, headers map[string]string, body []byte) ([]byte, error) {
 	if zero == nil || zero.Engine == nil {
 		return nil, zero.error(ctx, fmt.Errorf("engine is not provided and/or the library is not initialised"))
 	}
-	uuid := header.Get("0account-uuid")
-	token, err := BearerFromHeader(header)
+	uuid := headers["0account-uuid"]
+	token, err := BearerFromHeader(headers)
 
 	if err != nil || token == "" {
 		err := zero.save(ctx, uuid, body)

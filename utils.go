@@ -2,15 +2,14 @@ package zeroaccount
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 )
 
 // BearerFromHeader method
 // retrieves token from Authorization header
-func BearerFromHeader(header http.Header) (string, error) {
+func BearerFromHeader(headers map[string]string) (string, error) {
 
-	auth := header.Get("Authorization")
+	auth := headers["Authorization"]
 	const prefix = "BEARER "
 
 	if !(len(auth) >= len(prefix) && strings.ToUpper(auth[0:len(prefix)]) == prefix) {
