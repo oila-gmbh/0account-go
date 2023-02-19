@@ -1,3 +1,3 @@
-module github.com/oilastudio/oneaccount-go
+module github.com/oilastudio/0account-go
 
-go 1.14
+go 1.19
