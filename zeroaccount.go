@@ -17,8 +17,8 @@ type Engine interface {
 	Get(ctx context.Context, k string) ([]byte, error)
 }
 
-// ZeroAccount struct to handle middleware logic
-type ZeroAccount struct {
+// Client struct to handle middleware logic
+type Client struct {
 	Engine             Engine
 	GetterSetterEngine *GetterSetterEngine
 	Client             *http.Client
@@ -43,9 +43,9 @@ func httpClient() *http.Client {
 	return netClient
 }
 
-// New returns an instances of ZeroAccount middleware
-func New(options ...option) *ZeroAccount {
-	zero := ZeroAccount{}
+// New returns an instances of Client middleware
+func New(options ...option) *Client {
+	zero := Client{}
 	for _, option := range options {
 		option(&zero)
 	}
@@ -63,7 +63,7 @@ func New(options ...option) *ZeroAccount {
 }
 
 // Auth handles the authentication
-func (zero *ZeroAccount) Auth(ctx context.Context, headers map[string]string, body []byte) ([]byte, error) {
+func (zero *Client) Auth(ctx context.Context, headers map[string]string, body []byte) ([]byte, error) {
 	if zero == nil || zero.Engine == nil {
 		return nil, zero.error(ctx, fmt.Errorf("engine is not provided and/or the library is not initialised"))
 	}
@@ -85,7 +85,7 @@ func (zero *ZeroAccount) Auth(ctx context.Context, headers map[string]string, bo
 	return data, nil
 }
 
-func (zero *ZeroAccount) save(ctx context.Context, uuid string, data []byte) error {
+func (zero *Client) save(ctx context.Context, uuid string, data []byte) error {
 	err := zero.Engine.Set(ctx, uuid, data)
 	if err != nil {
 		return fmt.Errorf("engine error: cannot set. err: %v, key: %s, value: %s", err, uuid, string(data))
@@ -93,7 +93,7 @@ func (zero *ZeroAccount) save(ctx context.Context, uuid string, data []byte) err
 	return nil
 }
 
-func (zero *ZeroAccount) authorize(ctx context.Context, token, uuid string) ([]byte, error) {
+func (zero *Client) authorize(ctx context.Context, token, uuid string) ([]byte, error) {
 	if token == "" {
 		return nil, fmt.Errorf("empty or wrong bearer token")
 	}
@@ -108,7 +108,7 @@ func (zero *ZeroAccount) authorize(ctx context.Context, token, uuid string) ([]b
 	return v, nil
 }
 
-func (zero *ZeroAccount) error(ctx context.Context, err error) error {
+func (zero *Client) error(ctx context.Context, err error) error {
 	if err != nil && zero.ErrorListener != nil {
 		zero.ErrorListener(ctx, err)
 	}

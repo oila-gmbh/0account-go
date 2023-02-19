@@ -6,26 +6,26 @@ import (
 	"net/http"
 )
 
-type option func(zero *ZeroAccount)
+type option func(zero *Client)
 
 // SetOnErrorListener is used to track errors
-func SetOnErrorListener(errorListener ErrorListener) func(zero *ZeroAccount) {
-	return func(zero *ZeroAccount) {
+func SetOnErrorListener(errorListener ErrorListener) func(zero *Client) {
+	return func(zero *Client) {
 		zero.ErrorListener = errorListener
 	}
 }
 
 // SetEngine is used to change the cache engine.
 // If not set default in memory cache engine is used
-func SetEngine(e Engine) func(zero *ZeroAccount) {
-	return func(zero *ZeroAccount) {
+func SetEngine(e Engine) func(zero *Client) {
+	return func(zero *Client) {
 		zero.Engine = e
 	}
 }
 
 // SetClient can be used to change the underlying http client
-func SetClient(client *http.Client) func(zero *ZeroAccount) {
-	return func(zero *ZeroAccount) {
+func SetClient(client *http.Client) func(zero *Client) {
+	return func(zero *Client) {
 		zero.Client = client
 	}
 }
@@ -53,8 +53,8 @@ func (g GetterSetterEngine) Get(ctx context.Context, k string) ([]byte, error) {
 
 // SetEngineSetter can be used to set the setter function
 // for the engine
-func SetEngineSetter(setter Setter) func(oa *ZeroAccount) {
-	return func(oa *ZeroAccount) {
+func SetEngineSetter(setter Setter) func(oa *Client) {
+	return func(oa *Client) {
 		oa.Engine = nil
 		if oa.GetterSetterEngine == nil {
 			oa.GetterSetterEngine = &GetterSetterEngine{}
@@ -65,8 +65,8 @@ func SetEngineSetter(setter Setter) func(oa *ZeroAccount) {
 
 // SetEngineGetter can be used to set the getter function
 // for the engine
-func SetEngineGetter(getter Getter) func(oa *ZeroAccount) {
-	return func(oa *ZeroAccount) {
+func SetEngineGetter(getter Getter) func(oa *Client) {
+	return func(oa *Client) {
 		oa.Engine = nil
 		if oa.GetterSetterEngine == nil {
 			oa.GetterSetterEngine = &GetterSetterEngine{}
