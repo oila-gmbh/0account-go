@@ -67,7 +67,7 @@ func (zero *Client) Auth(ctx context.Context, headers map[string]string, body []
 	if zero == nil || zero.Engine == nil {
 		return nil, zero.error(ctx, fmt.Errorf("engine is not provided and/or the library is not initialised"))
 	}
-	uuid := headers["0account-uuid"]
+	uuid := headers["x-0account-uuid"]
 	token, err := BearerFromHeader(headers)
 
 	if err != nil || token == "" {
