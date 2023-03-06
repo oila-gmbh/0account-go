@@ -1,14 +1,74 @@
-### oneaccount-go
+### 0account-go
 
-This library is a middleware for the golang http router (or any HTTP request multiplexer that follow standard library semantics).
+Golang library for 0account.
 
-Please follow the instructions or official documentations for an integration.
+Please follow the instructions or official documentations to integrate 0account with your service.
 
-#### NOTE: examples 2 and 3 are the most preferred approaches for a production setup. Example 1 is only for development, or a service with small traffic.
+#### Example 1 (Custom Engine functions):
 
+We will be using redis for these examples: https://github.com/go-redis/redis.
+However, feel free to use any other database.
+
+```go
+package main
+
+import "net/http"
+import (
+...
+"github.com/oilastudio/0account-go"
+)
+
+func main() {
+	var redisClient = redis.NewClient(&redis.Options{})
+	var zero = zeroaccount.New(
+		zeroaccount.SetEngineSetter(func(ctx context.Context, k string, v []byte) error {
+			// for best results the timeout should match the timeout 
+			//set in frontend (updateInterval option, default: 3 minutes)
+			return redisClient.Set(ctx, k, v, 3*time.Minute).Err()
+		}),
+		zeroaccount.SetEngineGetter(func(ctx context.Context, k string) ([]byte, error) {
+			v, err := redisClient.Get(ctx, k).Result()
+			if err != nil {
+				return nil, err
+			}
+			return []byte(v), redisClient.Del(ctx, k).Err()
+		}),
+	)
+	prepareHeaders := func(header http.Header) map[string]string {
+		headers := make(map[string]string)
+		for k, v := range header {
+			headers[k] = v[0]
+		}
+		return headers
+	}
+
+	// The route URL is the callback URL you have set when you created 0account app. 
+	http.Handle("/zeroauth", func(w http.ResponseWriter, r *http.Request) {
+		data, err := zero.Auth(context.Background(), prepareHeaders(r.Header), c.Body())
+		if err != nil {
+			return errs.New(fiber.StatusUnauthorized, "not authorized", err)
+		}
+		if data == nil {
+			return c.SendStatus(fiber.StatusOK)
+		}
+		ar := dto.AuthRequest{}
+		if err = json.Unmarshal(data, &ar); err != nil {
+			return errs.New(fiber.StatusUnauthorized, "wrong credentials", err)
+		}
+	})
+}
+```
+Now our authentication is production ready!
+
+---
 
 #### Example 1 (In Memory Engine):
-`oneaccount-go` by default uses in memory cache engine if a custom engine is not supplied.
+`0account-go` by default uses in memory cache engine if a custom engine is not supplied.
+
+For brevity, we will leave out comments for the following examples, 
+if something is unclear please read the comments on the first example 
+or refer to the official documentation. If things are still unclear please create an issue. 
+
 ```go
 package main
 
@@ -46,43 +106,6 @@ func main() {
     })))
 }
 ```
-
-For brevity, we will leave out comments for the following examples, 
-if something is unclear please read the comments on the first example 
-or check the documentation or create an issue 
-
-Next 2 examples show how you can use any caching engine with `oneaccount-go`.
-This approach is recommended for a production environment. Both examples are used
-for the same purpose the only difference is how you implement them.
-We will be using redis for these examples: https://github.com/go-redis/redis
-
-#### Example 2 (Custom Engine functions):
-```go
-func main() {
-    var redisClient = redis.NewClient(&redis.Options{})
-    var oa = oneaccount.New(
-        oneaccount.SetEngineSetter(func(ctx context.Context, k string, v []byte) error {
-            // for best results the timeout should match the timeout 
-        	// set in frontend (updateInterval option, default: 3 minutes)
-        	return redisClient.Set(ctx, k, v, 3 * time.Minute).Err()
-        }),
-        oneaccount.SetEngineGetter(func(ctx context.Context, k string) ([]byte, error) {
-            v, err := redisClient.Get(ctx, k).Result()
-            if err != nil {
-                return nil, err
-            }
-            return []byte(v), redisClient.Del(ctx, k).Err()
-        }),
-	)
-    // The route URL is the callback URL you have set when you created One account app. 
-    http.Handle("/oneaccountauth", oa.Auth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        if !oneaccount.IsAuthenticated(r) {
-            return
-        }
-    })))
-}
-```
-Now our authentication is production ready!
 
 #### Example 3 (Custom Engine):
 ```go

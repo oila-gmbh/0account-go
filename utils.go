@@ -1,15 +1,14 @@
 package zeroaccount
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"strings"
 )
 
-// BearerFromHeader method
-// retrieves token from Authorization header
-func BearerFromHeader(headers map[string]string) (string, error) {
-
-	auth := headers["Authorization"]
+func bearerFromHeader(auth string) (string, error) {
 	const prefix = "BEARER "
 
 	if !(len(auth) >= len(prefix) && strings.ToUpper(auth[0:len(prefix)]) == prefix) {
@@ -19,4 +18,28 @@ func BearerFromHeader(headers map[string]string) (string, error) {
 	t := auth[len(prefix):]
 
 	return t, nil
+}
+
+func headersToString[T Header](value T) string {
+	switch s := any(value).(type) {
+	case []string:
+		return s[0]
+	case string:
+		return s
+	default:
+		return fmt.Sprint(s)
+	}
+}
+
+func copyBody(body io.Reader) []byte {
+	buf := bytes.Buffer{}
+	body = io.NopCloser(io.TeeReader(body, &buf))
+	return buf.Bytes()
+}
+
+func zerror(ctx context.Context, err error) error {
+	if errorListener != nil {
+		errorListener(ctx, err)
+	}
+	return err
 }
