@@ -25,11 +25,11 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	token, err := bearerFromHeader(headersToString(headers["Authorization"]))
 
 	if err != nil || token == "" {
-		bytes := copyBody(body)
-		if bytes == nil {
-			return nil, zerror(ctx, fmt.Errorf("body cannot be nil"))
+		bytes, err := copyBody(body)
+		if bytes == nil || err != nil {
+			return nil, zerror(ctx, fmt.Errorf("error getting data from body"))
 		}
-		err := save(ctx, uuid, bytes)
+		err = save(ctx, uuid, bytes)
 		if err != nil {
 			return nil, zerror(ctx, err)
 		}

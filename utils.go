@@ -31,10 +31,14 @@ func headersToString[T Header](value T) string {
 	}
 }
 
-func copyBody(body io.Reader) []byte {
+func copyBody(body io.Reader) ([]byte, error) {
 	buf := bytes.Buffer{}
-	body = io.NopCloser(io.TeeReader(body, &buf))
-	return buf.Bytes()
+	_, err := buf.ReadFrom(body)
+	if err != nil {
+		return nil, err
+	}
+	body = io.NopCloser(&buf)
+	return buf.Bytes(), nil
 }
 
 func zerror(ctx context.Context, err error) error {
