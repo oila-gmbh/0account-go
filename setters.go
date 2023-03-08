@@ -1,5 +1,9 @@
 package zeroaccount
 
+func SetAppSecret(secret string) {
+	appSecret = secret
+}
+
 func SetEngine(newEngine Engine) {
 	setter = newEngine.Set
 	getter = newEngine.Get
