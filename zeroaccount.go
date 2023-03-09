@@ -7,10 +7,6 @@ import (
 	"io"
 )
 
-const appSecretKey = "appSecret"
-const x0accountUUIDKey = "x-0account-uuid"
-const x0accountAuthKey = "x-0account-auth"
-
 var (
 	appSecret     string
 	setter        Setter
@@ -22,6 +18,12 @@ func init() {
 	SetEngine(NewInMemoryEngine())
 }
 
+type Data struct {
+	Metadata struct {
+		AppSecret string `json:"appSecret,omitempty"`
+	} `json:"metadata"`
+}
+
 // Auth handles the authentication
 func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) ([]byte, error) {
 	if appSecret == "" {
@@ -30,19 +32,22 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	if setter == nil || getter == nil {
 		return nil, zerror(ctx, fmt.Errorf("engine is not set and/or the library is not initialised"))
 	}
-	uuid := headersToString(headers[x0accountUUIDKey])
-	authenticating := headersToString(headers[x0accountAuthKey]) == "true"
+	uuid := getUUIDHeader(headers)
+	authenticating := getAuthHeader(headers) == "true"
 
 	if !authenticating {
 		bytes, err := copyBody(body)
-		if bytes == nil || err != nil {
+		if err != nil {
+			return nil, zerror(ctx, fmt.Errorf("error getting data from body: %w", err))
+		}
+		if bytes == nil || len(bytes) == 0 {
 			return nil, zerror(ctx, fmt.Errorf("error getting data from body"))
 		}
-		data := map[string]string{}
+		data := Data{}
 		if err := json.Unmarshal(bytes, &data); err != nil {
-			return nil, zerror(ctx, fmt.Errorf("cannot unmarshal data"))
+			return nil, zerror(ctx, fmt.Errorf("cannot unmarshal data %w", err))
 		}
-		if data[appSecretKey] != appSecret {
+		if data.Metadata.AppSecret != appSecret {
 			return nil, zerror(ctx, fmt.Errorf("incorrect app secret"))
 		}
 		if err = save(ctx, uuid, bytes); err != nil {
@@ -59,6 +64,10 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 }
 
 func save(ctx context.Context, uuid string, data []byte) error {
+	if uuid == "" {
+		return fmt.Errorf("uuid is not provided")
+	}
+
 	err := setter(ctx, uuid, data)
 	if err != nil {
 		return fmt.Errorf("engine error: cannot set. err: %v, key: %s, value: %s", err, uuid, string(data))
