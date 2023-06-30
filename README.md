@@ -12,10 +12,9 @@ However, feel free to use any other database.
 ```go
 package main
 
-import "net/http"
 import (
-...
-"github.com/oilastudio/0account-go"
+    ...
+    "github.com/oilastudio/0account-go"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 	var zero = zeroaccount.New(
 		zeroaccount.SetEngineSetter(func(ctx context.Context, k string, v []byte) error {
 			// for best results the timeout should match the timeout 
-			//set in frontend (updateInterval option, default: 3 minutes)
+			// set in frontend (updateInterval option, default: 3 minutes)
 			return redisClient.Set(ctx, k, v, 3*time.Minute).Err()
 		}),
 		zeroaccount.SetEngineGetter(func(ctx context.Context, k string) ([]byte, error) {
@@ -31,7 +30,7 @@ func main() {
 			if err != nil {
 				return nil, err
 			}
-			return []byte(v), redisClient.Del(ctx, k).Err()
+			return []byte(v), nil
 		}),
 	)
 	prepareHeaders := func(header http.Header) map[string]string {

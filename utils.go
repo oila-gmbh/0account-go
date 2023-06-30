@@ -1,10 +1,8 @@
 package zeroaccount
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 )
 
 var (
@@ -38,16 +36,6 @@ func headersToString[T Header](value T) string {
 	default:
 		return fmt.Sprint(s)
 	}
-}
-
-func copyBody(body io.Reader) ([]byte, error) {
-	buf := bytes.Buffer{}
-	if _, err := buf.ReadFrom(body); err != nil {
-		return nil, err
-	}
-	data := bytes.Clone(buf.Bytes())
-	body = io.NopCloser(&buf)
-	return data, nil
 }
 
 func zerror(ctx context.Context, err error) error {

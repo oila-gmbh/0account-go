@@ -36,7 +36,7 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	authenticating := getAuthHeader(headers) == "true"
 
 	if !authenticating {
-		bytes, err := copyBody(body)
+		bytes, err := io.ReadAll(body)
 		if err != nil {
 			return nil, zerror(ctx, fmt.Errorf("error getting data from body: %w", err))
 		}
