@@ -27,6 +27,7 @@ type Data struct {
 // Auth handles the authentication
 func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) ([]byte, error) {
 	if appSecret == "" {
+		fmt.Printf("APP SECRET GET: %s\n", appSecret)
 		return nil, zerror(ctx, fmt.Errorf("app secret is not set"))
 	}
 	if setter == nil || getter == nil {
