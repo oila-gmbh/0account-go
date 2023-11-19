@@ -30,6 +30,9 @@ func getFromHeader[T Header](keys []string, headers map[string]T) string {
 func headersToString[T Header](value T) string {
 	switch s := any(value).(type) {
 	case []string:
+		if len(s) == 0 {
+			return ""
+		}
 		return s[0]
 	case string:
 		return s
