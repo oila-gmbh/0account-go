@@ -39,6 +39,7 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	fmt.Println("authenticating: ", authenticating)
 
 	if !authenticating {
+		fmt.Println("---------- SAVING 0")
 		bytes, err := io.ReadAll(body)
 		if err != nil {
 			return nil, zerror(ctx, fmt.Errorf("error getting data from body: %w", err))
