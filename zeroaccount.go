@@ -26,7 +26,6 @@ type Data struct {
 
 // Auth handles the authentication
 func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) ([]byte, error) {
-	fmt.Println("---------- AUTH CALLED")
 	if appSecret == "" {
 		return nil, zerror(ctx, fmt.Errorf("app secret is not set"))
 	}
@@ -35,11 +34,8 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	}
 	uuid := getUUIDHeader(headers)
 	authenticating := getAuthHeader(headers) == "true"
-	fmt.Println("uuid: ", uuid)
-	fmt.Println("authenticating: ", authenticating)
 
 	if !authenticating {
-		fmt.Println("---------- SAVING 0")
 		bytes, err := io.ReadAll(body)
 		if err != nil {
 			return nil, zerror(ctx, fmt.Errorf("error getting data from body: %w", err))
@@ -51,14 +47,10 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 		if err := json.Unmarshal(bytes, &data); err != nil {
 			return nil, zerror(ctx, fmt.Errorf("cannot unmarshal data %w", err))
 		}
-		fmt.Println("------__------", data.Metadata.AppSecret)
-		fmt.Println("------__------", appSecret)
 		if data.Metadata.AppSecret != appSecret {
 			return nil, zerror(ctx, fmt.Errorf("incorrect app secret"))
 		}
-		fmt.Println("---------- SAVING 1")
 		if err = save(ctx, uuid, bytes); err != nil {
-			fmt.Println("---------- SAVING ERROR: ", err)
 			return nil, zerror(ctx, err)
 		}
 		return nil, nil
@@ -72,17 +64,13 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 }
 
 func save(ctx context.Context, uuid string, data []byte) error {
-	fmt.Println("---------- SAVING 2")
 	if uuid == "" {
 		return fmt.Errorf("uuid is not provided")
 	}
 
-	fmt.Println("---------- SAVING 3")
 	if err := setter(ctx, uuid, data); err != nil {
-		fmt.Println("---------- SAVING ERROR 2: ", err)
 		return fmt.Errorf("engine error: cannot set. err: %v, key: %s, value: %s", err, uuid, string(data))
 	}
-	fmt.Println("---------- SAVED")
 	return nil
 }
 
