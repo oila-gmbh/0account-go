@@ -51,6 +51,8 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 		if err := json.Unmarshal(bytes, &data); err != nil {
 			return nil, zerror(ctx, fmt.Errorf("cannot unmarshal data %w", err))
 		}
+		fmt.Println("------__------", data.Metadata.AppSecret)
+		fmt.Println("------__------", appSecret)
 		if data.Metadata.AppSecret != appSecret {
 			return nil, zerror(ctx, fmt.Errorf("incorrect app secret"))
 		}
