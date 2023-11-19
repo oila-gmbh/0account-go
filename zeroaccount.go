@@ -26,8 +26,8 @@ type Data struct {
 
 // Auth handles the authentication
 func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) ([]byte, error) {
+	fmt.Println("---------- AUTH CALLED")
 	if appSecret == "" {
-		fmt.Printf("APP SECRET GET: %s\n", appSecret)
 		return nil, zerror(ctx, fmt.Errorf("app secret is not set"))
 	}
 	if setter == nil || getter == nil {
@@ -51,7 +51,9 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 		if data.Metadata.AppSecret != appSecret {
 			return nil, zerror(ctx, fmt.Errorf("incorrect app secret"))
 		}
+		fmt.Println("---------- SAVING 1")
 		if err = save(ctx, uuid, bytes); err != nil {
+			fmt.Println("---------- SAVING ERROR: ", err)
 			return nil, zerror(ctx, err)
 		}
 		return nil, nil
@@ -65,14 +67,17 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 }
 
 func save(ctx context.Context, uuid string, data []byte) error {
+	fmt.Println("---------- SAVING 2")
 	if uuid == "" {
 		return fmt.Errorf("uuid is not provided")
 	}
 
-	err := setter(ctx, uuid, data)
-	if err != nil {
+	fmt.Println("---------- SAVING 3")
+	if err := setter(ctx, uuid, data); err != nil {
+		fmt.Println("---------- SAVING ERROR 2: ", err)
 		return fmt.Errorf("engine error: cannot set. err: %v, key: %s, value: %s", err, uuid, string(data))
 	}
+	fmt.Println("---------- SAVED")
 	return nil
 }
 
