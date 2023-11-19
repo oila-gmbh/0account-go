@@ -1,7 +1,5 @@
 package zeroaccount
 
-import "fmt"
-
 func SetAppSecret(secret string) {
 	appSecret = secret
 }
@@ -12,7 +10,6 @@ func SetEngine(newEngine Engine) {
 }
 
 func SetEngineSetterAndGetter(newSetter Setter, newGetter Getter) {
-	fmt.Println("---------- SETTING SETTER AND GETTER")
 	setter = newSetter
 	getter = newGetter
 }

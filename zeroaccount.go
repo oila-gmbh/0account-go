@@ -35,6 +35,8 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 	}
 	uuid := getUUIDHeader(headers)
 	authenticating := getAuthHeader(headers) == "true"
+	fmt.Println("uuid: ", uuid)
+	fmt.Println("authenticating: ", authenticating)
 
 	if !authenticating {
 		bytes, err := io.ReadAll(body)
