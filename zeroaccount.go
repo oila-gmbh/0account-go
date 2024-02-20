@@ -21,7 +21,10 @@ func init() {
 type Data struct {
 	Metadata struct {
 		AppSecret string `json:"appSecret,omitempty"`
+		UserID    string `json:"userId,omitempty"`
+		ProfileID string `json:"profileId,omitempty"`
 	} `json:"metadata"`
+	Data json.RawMessage `json:"data"`
 }
 
 // Auth handles the authentication
@@ -50,7 +53,12 @@ func Auth[T Header](ctx context.Context, headers map[string]T, body io.Reader) (
 		if data.Metadata.AppSecret != appSecret {
 			return nil, zerror(ctx, fmt.Errorf("incorrect app secret"))
 		}
-		if err = save(ctx, uuid, bytes); err != nil {
+		data.Metadata.AppSecret = ""
+		cleanData, err := json.Marshal(data)
+		if err != nil {
+			return nil, zerror(ctx, fmt.Errorf("incorrect app secret, err: %w", err))
+		}
+		if err = save(ctx, uuid, cleanData); err != nil {
 			return nil, zerror(ctx, err)
 		}
 		return nil, nil
