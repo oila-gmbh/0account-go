@@ -91,5 +91,8 @@ func authorize(ctx context.Context, uuid string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("engine error: key is not found, err: %v, key: %s, value:%s", err, uuid, string(v))
 	}
+	if v == nil {
+		return []byte{}, fmt.Errorf("value is not provided")
+	}
 	return v, nil
 }
