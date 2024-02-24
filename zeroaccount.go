@@ -15,7 +15,9 @@ var (
 )
 
 func init() {
-	SetEngine(NewInMemoryEngine())
+	if setter == nil && getter == nil {
+		SetEngine(NewInMemoryEngine())
+	}
 }
 
 type ZeroRequest[T any] struct {
