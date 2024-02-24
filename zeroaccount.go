@@ -20,7 +20,7 @@ func init() {
 	}
 }
 
-type ZeroRequest[T any] struct {
+type zeroRequest[T any] struct {
 	Metadata metadata `json:"metadata"`
 	Data     T        `json:"data"`
 }
@@ -33,7 +33,7 @@ type metadata struct {
 
 // Auth handles the authentication
 func Auth[T any](ctx context.Context, headers map[string][]string, body io.Reader) (T, Metadata, error) {
-	zr := ZeroRequest[T]{}
+	zr := zeroRequest[T]{}
 	meta := Metadata{}
 	if appSecret == "" {
 		return zr.Data, meta, zerror(ctx, fmt.Errorf("app secret is not set"))
@@ -92,8 +92,8 @@ func save(ctx context.Context, uuid string, data []byte) error {
 	return nil
 }
 
-func authorize[T any](ctx context.Context, uuid string) (ZeroRequest[T], error) {
-	zr := ZeroRequest[T]{}
+func authorize[T any](ctx context.Context, uuid string) (zeroRequest[T], error) {
+	zr := zeroRequest[T]{}
 	if uuid == "" {
 		return zr, fmt.Errorf("uuid is not provided")
 	}
