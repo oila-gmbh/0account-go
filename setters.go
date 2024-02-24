@@ -1,5 +1,7 @@
 package zeroaccount
 
+// TODO: add setters for custom marshaller and unmarshaller
+
 func SetAppSecret(secret string) {
 	appSecret = secret
 }

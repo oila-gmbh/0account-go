@@ -2,7 +2,6 @@ package zeroaccount
 
 import (
 	"context"
-	"fmt"
 )
 
 var (
@@ -10,35 +9,28 @@ var (
 	uuidHeaders = []string{"x-0account-uuid", "X-0account-Uuid", "X-0account-UUID"}
 )
 
-func getAuthHeader[T Header](headers map[string]T) string {
+func getAuthHeader(headers map[string][]string) string {
 	return getFromHeader(authHeaders, headers)
 }
 
-func getUUIDHeader[T Header](headers map[string]T) string {
+func getUUIDHeader(headers map[string][]string) string {
 	return getFromHeader(uuidHeaders, headers)
 }
 
-func getFromHeader[T Header](keys []string, headers map[string]T) string {
+func getFromHeader(keys []string, headers map[string][]string) string {
 	for _, key := range keys {
-		if result := headersToString(headers[key]); result != "" {
+		if result := firstFromHeaders(headers[key]); result != "" {
 			return result
 		}
 	}
 	return ""
 }
 
-func headersToString[T Header](value T) string {
-	switch s := any(value).(type) {
-	case []string:
-		if len(s) == 0 {
-			return ""
-		}
-		return s[0]
-	case string:
-		return s
-	default:
-		return fmt.Sprint(s)
+func firstFromHeaders(value []string) string {
+	if len(value) == 0 {
+		return ""
 	}
+	return value[0]
 }
 
 func zerror(ctx context.Context, err error) error {
