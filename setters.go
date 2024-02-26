@@ -7,8 +7,7 @@ func SetAppSecret(secret string) {
 }
 
 func SetEngine(newEngine Engine) {
-	setter = newEngine.Set
-	getter = newEngine.Get
+	SetEngineSetterAndGetter(newEngine.Set, newEngine.Get)
 }
 
 func SetEngineSetterAndGetter(newSetter Setter, newGetter Getter) {

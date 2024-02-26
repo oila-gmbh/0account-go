@@ -45,6 +45,7 @@ func Auth[T any](ctx context.Context, headers map[string][]string, body io.Reade
 	authenticating := getAuthHeader(headers) == "true"
 
 	if !authenticating {
+		meta.isWebhookRequest = true
 		bytes, err := io.ReadAll(body)
 		if err != nil {
 			return zr.Data, meta, zerror(ctx, fmt.Errorf("error getting data from body: %w", err))
