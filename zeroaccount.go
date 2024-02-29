@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 )
 
 var (
@@ -42,7 +43,7 @@ func Auth[T any](ctx context.Context, headers map[string][]string, body io.Reade
 		return zr.Data, meta, zerror(ctx, fmt.Errorf("engine is not set and/or the library is not initialised"))
 	}
 	uuid := getUUIDHeader(headers)
-	authenticating := getAuthHeader(headers) == "true"
+	authenticating := strings.ToLower(getAuthHeader(headers)) == "true"
 
 	if !authenticating {
 		meta.isWebhookRequest = true
